@@ -1,11 +1,11 @@
 const R_Register = [ 
-    { 'R1': undefined }, 
-    { 'R2': undefined }, 
-    { 'R3': undefined }, 
-    { 'R4': undefined }, 
-    { 'R5': undefined }, 
-    { 'R6': undefined }, 
-    { 'R7': undefined }
+    { 'R1': 0x0000 }, 
+    { 'R2': 0x0000 }, 
+    { 'R3': 0x0000 }, 
+    { 'R4': 0x0000 }, 
+    { 'R5': 0x0000 }, 
+    { 'R6': 0x0000 }, 
+    { 'R7': 0x0000 }
 ];
 let instructionRegister = ''; 
 let programCounter = 0;
@@ -52,7 +52,7 @@ module.exports = {
         programCount = 0;
         for (let i = 0; i < R_Register.length; i++) {
             const prop = 'R' + (i+1);
-            R_Register[prop] = undefined;
+            R_Register[prop] = 0x0000;
         }
     },
 
