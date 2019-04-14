@@ -1,6 +1,5 @@
 function funcHalfAdder(bitA, bitB) {
-    let ans = [(!bitA & bitB) | (bitA & !bitB), bitA & bitB];
-    return ans;
+    return [(!bitA & bitB) | (bitA & !bitB), bitA & bitB];
 }
 console.log(funcHalfAdder(false, false));
 console.log(funcHalfAdder(false, true));
