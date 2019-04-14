@@ -7,4 +7,4 @@
     더 노력해야겠다고 마음을 먹게 되는 미션이었던것 같다.
 
 ### 참고
-[코드 스쿼드 JIN 님이 구현한 Memory & CPU](https://github.com/eugene94/codesquad/blob/master/CS/step-2/source/transform.js)
+[코드 스쿼드 JIN 님이 구현한 Memory & CPU](https://github.com/eugene94/codesquad/tree/master/CS/step-2/source)
