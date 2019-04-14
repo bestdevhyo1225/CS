@@ -1,72 +1,53 @@
-const R_Register = [ 
-    { 'R1': 0x0000 }, 
-    { 'R2': 0x0000 }, 
-    { 'R3': 0x0000 }, 
-    { 'R4': 0x0000 }, 
-    { 'R5': 0x0000 }, 
-    { 'R6': 0x0000 }, 
-    { 'R7': 0x0000 }
-];
-let instructionRegister = ''; 
-let programCounter = 0;
-let returnRegister = 0;
+const notationConverter = require('./notation_converter');
+const arithmeticLogicUnit = require('./arithmetic_logic_unit');
+const PROGRAM_COUNTER_INDEX = 0;
 
-const decode = (instructionRegister) => {
-    const instruction = instructionRegister.split(' ');
-    switch(instruction[0]) {
-        case 'MOV'  : 
-        {  
-            R_Register[instruction[1]] = parseInt(instruction[2]);
-            break;
-        }
-        case 'STORE': 
-        case 'LOAD' : 
-        case 'ADD'  : 
-        {
-            R_Register[instruction[1]] = R_Register[instruction[2]];
-            if (instruction[3][0] === '#') {    // offsetValue
-                R_Register[instruction[1]] += parseInt(instruction[3].substr(1, instruction[3].length-1));
-            } else {    // offsetReg
-                R_Register[instruction[1]] += R_Register[instruction[3]];
-            }
-            break;
-        }
-        case 'SUB'  : 
-        {
-            R_Register[instruction[1]] = R_Register[instruction[2]];
-            if (instruction[3][0] === '#') {    
-                R_Register[instruction[1]] -= parseInt(instruction[3].substr(1, instruction[3].length-1));
-            } else {    
-                R_Register[instruction[1]] -= R_Register[instruction[3]];
-            }
-            break;
-        }
-        case 'AND'  : break;
-        case 'OR'   : break;
+class CPU {
+    constructor(memory) {
+        this.memory = memory;
+        this.R_Register = Array(8).fill(0);
     }
-    return R_Register[instruction[1]];
-}
 
-module.exports = {
-    reset : () => {
-        programCount = 0;
-        for (let i = 0; i < R_Register.length; i++) {
-            const prop = 'R' + (i+1);
-            R_Register[prop] = 0x0000;
+    fetch() { return this.memory.fetch(this.R_Register[PROGRAM_COUNTER_INDEX]++); }
+
+    execute(int16_IR) {
+        const [instruction, first, second, isValue, third] = this.decode(int16_IR);
+        const instructionWord = arithmeticLogicUnit.excuteList[instruction]();
+        const executeResult = arithmeticLogicUnit[instructionWord].call(this, second, third, isValue);
+
+        if (instructionWord === 'STORE') {
+            this.memory.store(executeResult, this.R_Register[notationConverter.binaryToDecimal(first)]);
+        } else {
+            this.R_Register[notationConverter.binaryToDecimal(first)] = executeResult;
         }
-    },
+    }
 
-    fetch : (instructionReg) => {
-        instructionRegister = instructionReg;
-        programCounter += 2;
-    },
+    decode(int16_IR) {
+        const binary = notationConverter.decimalToBinary(int16_IR);
+        while (binary.length < 16) binary.unshift(0);
 
-    execute : () => { 
-        const decodeResult = decode(instructionRegister);
-        returnRegister = decodeResult;
-    },
+        const inst = binary.splice(0, 4).join('');
+        const first = binary.splice(0, 3);
+        let second, isValue, third;
+        if (inst === '1011') {
+            second = binary.splice(0, 9);
+            return [ inst, first, second ];
+        } else {
+            second = binary.splice(0, 3);
+            if (inst[3] === 0 && inst !== '0110') {
+                isValue = binary.splice(0, 1);
+                third   = binary;
+            } else {
+                isValue = binary.splice(0, 3);
+                third   = binary;
+            }
+            return [ inst, first, second, isValue, third ];
+        }
+    }
 
-    dump : () => { return returnRegister; },
+    dump() { return this.R_Register; }
 
-    getProgramCounter : () => { return programCounter; },
+    reset() { this.R_Register.forEach( (index) => { this.R_Register[index] = 0; } ); }
 }
+
+module.exports = CPU;
